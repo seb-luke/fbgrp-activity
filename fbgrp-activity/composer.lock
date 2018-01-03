@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "322a16d2ec7e13f13bc468dbfdae26a8",
+    "content-hash": "f4dd0c4b75ca6613ddb3c6b651f5b1dc",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -1741,6 +1741,201 @@
             "time": "2017-10-11T12:05:26+00:00"
         },
         {
+            "name": "symfony/routing",
+            "version": "v4.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/routing.git",
+                "reference": "972810def5cae044d19195045f7eb418141bf37b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/routing/zipball/972810def5cae044d19195045f7eb418141bf37b",
+                "reference": "972810def5cae044d19195045f7eb418141bf37b",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.1.3"
+            },
+            "conflict": {
+                "symfony/config": "<3.4",
+                "symfony/dependency-injection": "<3.4",
+                "symfony/yaml": "<3.4"
+            },
+            "require-dev": {
+                "doctrine/annotations": "~1.0",
+                "doctrine/common": "~2.2",
+                "psr/log": "~1.0",
+                "symfony/config": "~3.4|~4.0",
+                "symfony/dependency-injection": "~3.4|~4.0",
+                "symfony/expression-language": "~3.4|~4.0",
+                "symfony/http-foundation": "~3.4|~4.0",
+                "symfony/yaml": "~3.4|~4.0"
+            },
+            "suggest": {
+                "doctrine/annotations": "For using the annotation loader",
+                "symfony/config": "For using the all-in-one router or any loader",
+                "symfony/dependency-injection": "For loading routes from a service",
+                "symfony/expression-language": "For using expression matching",
+                "symfony/http-foundation": "For using a Symfony Request object",
+                "symfony/yaml": "For using the YAML loader"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "4.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Routing\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Routing Component",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "router",
+                "routing",
+                "uri",
+                "url"
+            ],
+            "time": "2017-12-14T22:39:22+00:00"
+        },
+        {
+            "name": "symfony/yaml",
+            "version": "v4.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/yaml.git",
+                "reference": "a5ee52d155f06ad23b19eb63c31228ff56ad1116"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/a5ee52d155f06ad23b19eb63c31228ff56ad1116",
+                "reference": "a5ee52d155f06ad23b19eb63c31228ff56ad1116",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.1.3"
+            },
+            "conflict": {
+                "symfony/console": "<3.4"
+            },
+            "require-dev": {
+                "symfony/console": "~3.4|~4.0"
+            },
+            "suggest": {
+                "symfony/console": "For validating YAML files using the lint command"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "4.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Yaml\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Yaml Component",
+            "homepage": "https://symfony.com",
+            "time": "2017-12-12T08:41:51+00:00"
+        }
+    ],
+    "packages-dev": [
+        {
+            "name": "symfony/dotenv",
+            "version": "v4.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/dotenv.git",
+                "reference": "ffcaeab01e42b0c40669add2aa8e77f79ddb9389"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/dotenv/zipball/ffcaeab01e42b0c40669add2aa8e77f79ddb9389",
+                "reference": "ffcaeab01e42b0c40669add2aa8e77f79ddb9389",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.1.3"
+            },
+            "require-dev": {
+                "symfony/process": "~3.4|~4.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "4.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Dotenv\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Registers environment variables from a .env file",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "dotenv",
+                "env",
+                "environment"
+            ],
+            "time": "2017-12-08T15:46:13+00:00"
+        },
+        {
             "name": "symfony/polyfill-php72",
             "version": "v1.6.0",
             "source": {
@@ -1822,84 +2017,6 @@
             ],
             "description": "A pack for the Symfony web profiler",
             "time": "2017-12-12T01:48:24+00:00"
-        },
-        {
-            "name": "symfony/routing",
-            "version": "v4.0.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/routing.git",
-                "reference": "972810def5cae044d19195045f7eb418141bf37b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/routing/zipball/972810def5cae044d19195045f7eb418141bf37b",
-                "reference": "972810def5cae044d19195045f7eb418141bf37b",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.1.3"
-            },
-            "conflict": {
-                "symfony/config": "<3.4",
-                "symfony/dependency-injection": "<3.4",
-                "symfony/yaml": "<3.4"
-            },
-            "require-dev": {
-                "doctrine/annotations": "~1.0",
-                "doctrine/common": "~2.2",
-                "psr/log": "~1.0",
-                "symfony/config": "~3.4|~4.0",
-                "symfony/dependency-injection": "~3.4|~4.0",
-                "symfony/expression-language": "~3.4|~4.0",
-                "symfony/http-foundation": "~3.4|~4.0",
-                "symfony/yaml": "~3.4|~4.0"
-            },
-            "suggest": {
-                "doctrine/annotations": "For using the annotation loader",
-                "symfony/config": "For using the all-in-one router or any loader",
-                "symfony/dependency-injection": "For loading routes from a service",
-                "symfony/expression-language": "For using expression matching",
-                "symfony/http-foundation": "For using a Symfony Request object",
-                "symfony/yaml": "For using the YAML loader"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "4.0-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Routing\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony Routing Component",
-            "homepage": "https://symfony.com",
-            "keywords": [
-                "router",
-                "routing",
-                "uri",
-                "url"
-            ],
-            "time": "2017-12-14T22:39:22+00:00"
         },
         {
             "name": "symfony/stopwatch",
@@ -2249,64 +2366,6 @@
             "time": "2017-12-12T08:41:51+00:00"
         },
         {
-            "name": "symfony/yaml",
-            "version": "v4.0.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/yaml.git",
-                "reference": "a5ee52d155f06ad23b19eb63c31228ff56ad1116"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/a5ee52d155f06ad23b19eb63c31228ff56ad1116",
-                "reference": "a5ee52d155f06ad23b19eb63c31228ff56ad1116",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.1.3"
-            },
-            "conflict": {
-                "symfony/console": "<3.4"
-            },
-            "require-dev": {
-                "symfony/console": "~3.4|~4.0"
-            },
-            "suggest": {
-                "symfony/console": "For validating YAML files using the lint command"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "4.0-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Yaml\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony Yaml Component",
-            "homepage": "https://symfony.com",
-            "time": "2017-12-12T08:41:51+00:00"
-        },
-        {
             "name": "twig/twig",
             "version": "v2.4.4",
             "source": {
@@ -2371,65 +2430,6 @@
                 "templating"
             ],
             "time": "2017-09-27T18:10:31+00:00"
-        }
-    ],
-    "packages-dev": [
-        {
-            "name": "symfony/dotenv",
-            "version": "v4.0.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/dotenv.git",
-                "reference": "ffcaeab01e42b0c40669add2aa8e77f79ddb9389"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/dotenv/zipball/ffcaeab01e42b0c40669add2aa8e77f79ddb9389",
-                "reference": "ffcaeab01e42b0c40669add2aa8e77f79ddb9389",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.1.3"
-            },
-            "require-dev": {
-                "symfony/process": "~3.4|~4.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "4.0-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Dotenv\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Registers environment variables from a .env file",
-            "homepage": "https://symfony.com",
-            "keywords": [
-                "dotenv",
-                "env",
-                "environment"
-            ],
-            "time": "2017-12-08T15:46:13+00:00"
         }
     ],
     "aliases": [],
