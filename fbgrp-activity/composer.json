@@ -15,6 +15,7 @@
         "symfony/framework-bundle": "^4.0",
         "symfony/lts": "^4@dev",
         "symfony/maker-bundle": "dev-master",
+        "symfony/monolog-bundle": "^3.1",
         "symfony/security": "^4.0",
         "symfony/yaml": "^4.0"
     },
