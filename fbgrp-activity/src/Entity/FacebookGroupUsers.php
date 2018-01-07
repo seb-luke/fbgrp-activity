@@ -16,16 +16,16 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 class FacebookGroupUsers
 {
     /**
-     * @var int
+     * @var string
      * @ORM\Id
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="string")
      */
     private $fbUserId;
 
     /**
-     * @var int
+     * @var string
      * @ORM\Id
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="string")
      */
     private $fbGroupId;
 
@@ -47,35 +47,42 @@ class FacebookGroupUsers
      */
     private $dateOfRemoval;
 
-    public function __construct($facebookUserId, $facebookGroupId, $userFullName)
+    /**
+     * @var boolean
+     * @ORM\Column(type="boolean", nullable=false)
+     */
+    private $isAdmin;
+
+    public function __construct($facebookUserId, $facebookGroupId, $userFullName, $isAdmin = false)
     {
         $this->fbUserId = $facebookUserId;
         $this->fbGroupId = $facebookGroupId;
         $this->fullName = $userFullName;
         $this->isActive = true;
         $this->dateOfRemoval = null;
+        $this->isAdmin = $isAdmin;
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getId(): int
+    public function getId(): string
     {
         return $this->getFbUserId();
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getFbUserId(): int
+    public function getFbUserId(): string
     {
         return $this->fbUserId;
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getFbGroupId(): int
+    public function getFbGroupId(): string
     {
         return $this->fbGroupId;
     }
@@ -102,6 +109,22 @@ class FacebookGroupUsers
     public function getDateOfRemoval(): \DateTime
     {
         return $this->dateOfRemoval;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAdmin(): bool
+    {
+        return $this->isAdmin;
+    }
+
+    /**
+     * @param bool $isAdmin
+     */
+    public function setIsAdmin(bool $isAdmin): void
+    {
+        $this->isAdmin = $isAdmin;
     }
 
     /**

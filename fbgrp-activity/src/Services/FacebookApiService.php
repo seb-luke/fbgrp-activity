@@ -11,6 +11,7 @@ namespace App\Services;
 use App\Entity\FacebookUser;
 use Facebook\Exceptions\FacebookSDKException;
 use Facebook\Facebook;
+use Facebook\GraphNodes\GraphEdge;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Yaml\Exception\RuntimeException;
@@ -244,6 +245,38 @@ class FacebookApiService
             return $response->getGraphEdge()->asArray();
         } catch (FacebookSDKException $e) {
             $this->logger->error("Could not generate Graph Edge for page from Facebook Response", ['exception' => $e]);
+            throw new RuntimeException($e);
+        }
+    }
+
+    /**
+     * @param $groupId
+     * @param $user FacebookUser
+     * @return \Facebook\GraphNodes\GraphEdge
+     */
+    public function getUsersOfGroup($groupId, $user)
+    {
+        $fbToken = $user->getFacebookAuthToken();
+
+        try {
+            $response = $this->getFromFacebookEndpoint(sprintf('/%s/members', $groupId), $fbToken);
+            return $response->getGraphEdge();
+        } catch (FacebookSDKException $e) {
+            $this->logger->error("Could not generate Graph Edge for users of group from Facebook Response", ['exception' => $e]);
+            throw new RuntimeException($e);
+        }
+    }
+
+    /**
+     * @param $feedEdge GraphEdge
+     * @return GraphEdge|null
+     */
+    public function getNextPage($feedEdge)
+    {
+        try {
+            return $this->getFacebookObject()->next($feedEdge);
+        } catch (FacebookSDKException $e) {
+            $this->logger->error("Could not navigate to next edge feed page", ['exception' => $e]);
             throw new RuntimeException($e);
         }
     }

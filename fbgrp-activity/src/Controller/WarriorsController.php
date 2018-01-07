@@ -3,9 +3,11 @@
 namespace App\Controller;
 
 use App\Entity\FacebookGroups;
+use App\Entity\FacebookGroupUsers;
 use App\Entity\FacebookUser;
 use App\Form\FacebookGroupType;
 use App\Services\FacebookApiService;
+use Facebook\GraphNodes\GraphEdge;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -74,6 +76,7 @@ class WarriorsController extends Controller
 
         if ($form->isSubmitted() && $form->isValid()) {
             $em->persist($fbGroup);
+            $this->importAllUsersOfGroup($fbService, $fbGroup->getId());
 
             if ($fbGroup->getSecondaryGroupId() != null) {
                 // it means that a secondary group exists and it should be persisted
@@ -123,7 +126,33 @@ class WarriorsController extends Controller
     {
         /** @var FacebookGroups $group */
         $group = $this->getDoctrine()->getManager()->getRepository(FacebookGroups::class)->find($grpId);
+        dump($group);
 
-        return $this->render('App/Warriors/manageGroup.html.twig', ['group_name' => $group->getName()]);
+        return $this->render('App/Warriors/viewGroup.html.twig', ['group_name' => $group->getName()]);
+    }
+
+    /**
+     * @param FacebookApiService $fbService
+     * @param $groupId
+     */
+    private function importAllUsersOfGroup(FacebookApiService $fbService, $groupId)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $usersFeedEdge = $fbService->getUsersOfGroup($groupId, $this->getUser());
+
+        while ($usersFeedEdge) {
+
+            /** @var GraphEdge $userEdge */
+            foreach ($usersFeedEdge as $userEdge) {
+                $userData = $userEdge->asArray();
+
+                $groupUser = new FacebookGroupUsers($userData['id'], $groupId, $userData['name'], $userData['administrator']);
+                $em->persist($groupUser);
+            }
+
+            $usersFeedEdge = $fbService->getNextPage($usersFeedEdge);
+        }
+
+        $em->flush();
     }
 }
