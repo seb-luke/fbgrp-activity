@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h2>Welcome back, {{ user.surname }} {{ user.name }}</h2>
+
+    <p>
+        These are your groups:<br>
+    </p>
+
+    <ul>
+    {% for group in groups %}
+        <li>
+            {{ group.name }}
+            {% if group.isWarriorManaged %}
+                <em> (is managed by App)</em>
+            {% else %}
+                <em> (<a href="group/add/{{ group.id }}">Add this group to Warriors</a>)</em>
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+
+    <div>
+        Manage already existing groups that you admin:
+        <ul>
+            {% for group in groups %}
+                {% if group.isWarriorManaged %}
+                    <li>
+                        <a href="group/manage/{{ group.id }}">{{ group.name }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+
+{% endblock %}
