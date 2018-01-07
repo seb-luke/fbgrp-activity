@@ -27,7 +27,8 @@ class FacebookApiService
         "email",
         "public_profile",
         "user_birthday",
-        "user_managed_groups"
+        "user_managed_groups",
+        "manage_pages"
     ];
 
     /**
@@ -208,6 +209,41 @@ class FacebookApiService
             return $response->getGraphEdge()->asArray();
         } catch (FacebookSDKException $e) {
             $this->logger->error("Could not extract Graph Group from Facebook Response", ['exception' => $e]);
+            throw new RuntimeException($e);
+        }
+    }
+
+    /**
+     * @param $grpId int
+     * @param $user FacebookUser
+     * @return \Facebook\GraphNodes\GraphGroup
+     */
+    public function getDataForGroup($grpId, $user)
+    {
+        $fbToken = $user->getFacebookAuthToken();
+
+        try {
+            $response = $this->getFromFacebookEndpoint("/" . $grpId, $fbToken);
+            return $response->getGraphGroup();
+        } catch (FacebookSDKException $e) {
+            $this->logger->error("Could not generate Graph Group from Facebook Response", ['exception' => $e]);
+            throw new RuntimeException($e);
+        }
+    }
+
+    /**
+     * @param $user FacebookUser
+     * @return array
+     */
+    public function getManagedPagesOfUser($user)
+    {
+        $fbToken = $user->getFacebookAuthToken();
+
+        try {
+            $response = $this->getFromFacebookEndpoint("/me/accounts?fields=name,id", $fbToken);
+            return $response->getGraphEdge()->asArray();
+        } catch (FacebookSDKException $e) {
+            $this->logger->error("Could not generate Graph Edge for page from Facebook Response", ['exception' => $e]);
             throw new RuntimeException($e);
         }
     }

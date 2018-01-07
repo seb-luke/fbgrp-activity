@@ -10,21 +10,21 @@ use Doctrine\ORM\Mapping as ORM;
 class FacebookGroups
 {
     /**
-     * @var int
+     * @var string
      * @ORM\Id
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="string")
      */
     private $fbGroupId;
 
     /**
-     * @var int
-     * @ORM\Column(type="integer", nullable=false)
+     * @var string
+     * @ORM\Column(type="string", nullable=false)
      */
     private $mainAdminId;
 
     /**
-     * @var int
-     * @ORM\Column(type="integer", nullable=true)
+     * @var string|null
+     * @ORM\Column(type="string", nullable=true)
      */
     private $fbPageId;
 
@@ -41,61 +41,55 @@ class FacebookGroups
     private $isPrimaryGroup;
 
     /**
-     * @var int
-     * @ORM\Column(type="integer", nullable=true)
+     * @var string|null
+     * @ORM\Column(type="string", nullable=true)
      */
     private $secondaryGroupId;
 
-    public function __construct($facebookGroupId)
+    public function __construct($facebookGroupId, $adminId, $name)
     {
         $this->fbGroupId = $facebookGroupId;
+        $this->mainAdminId = $adminId;
+        $this->name = $name;
         $this->isPrimaryGroup = true;
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getFbGroupId(): int
+    public function getFbGroupId(): string
     {
         return $this->fbGroupId;
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getId(): int
+    public function getId(): string
     {
         return $this->getFbGroupId();
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getMainAdminId(): int
+    public function getMainAdminId(): string
     {
         return $this->mainAdminId;
     }
 
     /**
-     * @param int $mainAdminId
+     * @return string|null
      */
-    public function setMainAdminId(int $mainAdminId): void
-    {
-        $this->mainAdminId = $mainAdminId;
-    }
-
-    /**
-     * @return int
-     */
-    public function getFbPageId(): int
+    public function getFbPageId(): ?string
     {
         return $this->fbPageId;
     }
 
     /**
-     * @param int $fbPageId
+     * @param string $fbPageId
      */
-    public function setFbPageId(int $fbPageId): void
+    public function setFbPageId(string $fbPageId): void
     {
         $this->fbPageId = $fbPageId;
     }
@@ -106,14 +100,6 @@ class FacebookGroups
     public function getName(): string
     {
         return $this->name;
-    }
-
-    /**
-     * @param string $name
-     */
-    public function setName(string $name): void
-    {
-        $this->name = $name;
     }
 
     /**
@@ -133,17 +119,17 @@ class FacebookGroups
     }
 
     /**
-     * @return int
+     * @return string|null
      */
-    public function getSecondaryGroupId(): int
+    public function getSecondaryGroupId(): ?string
     {
         return $this->secondaryGroupId;
     }
 
     /**
-     * @param int $secondaryGroupId
+     * @param string $secondaryGroupId
      */
-    public function setSecondaryGroupId(int $secondaryGroupId): void
+    public function setSecondaryGroupId(string $secondaryGroupId): void
     {
         $this->secondaryGroupId = $secondaryGroupId;
     }
