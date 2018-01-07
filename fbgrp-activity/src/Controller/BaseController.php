@@ -25,12 +25,10 @@ class BaseController extends Controller
      */
     public function login(FacebookApiService $fbService)
     {
-        $helper = $fbService->getFacebookObject()->getRedirectLoginHelper();
-        $loginUrl = $helper->getLoginUrl($this->generateUrl("loggedIn", [], UrlGeneratorInterface::ABSOLUTE_URL)
-            , ["email", "public_profile", "user_birthday"]
-        );
+        $loginUrl = $fbService->getFacebookLoginUrl($this->generateUrl("loggedIn", [],
+                                                UrlGeneratorInterface::ABSOLUTE_URL));
 
-        return $this->render("App/index.html.twig", ["loginUrl" => $loginUrl]);
+        return $this->render("App/login.html.twig", ["loginUrl" => $loginUrl]);
     }
 
     /**

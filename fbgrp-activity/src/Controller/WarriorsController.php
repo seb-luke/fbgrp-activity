@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Services\FacebookApiService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
@@ -9,10 +10,17 @@ class WarriorsController extends Controller
 {
     /**
      * @Route("/warriors", name="warriorsIndex")
+     * @param FacebookApiService $fbService
+     * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function warriorsIndex()
+    public function warriorsIndex(FacebookApiService $fbService)
     {
-        // replace this line with your own code!
-        return $this->render('@Maker/demoPage.html.twig', [ 'path' => str_replace($this->getParameter('kernel.project_dir').'/', '', __FILE__) ]);
+        $loggedUser = $this->getUser();
+        $groups = $fbService->getGroupsWhereUserIsAdmin($loggedUser);
+
+        return $this->render('App/Warriors/warriorsIndex.html.twig', [
+            'user' => ['name' => $loggedUser->getName(), 'surname' => $loggedUser->getSurname()],
+            'groups' => $groups
+        ]);
     }
 }

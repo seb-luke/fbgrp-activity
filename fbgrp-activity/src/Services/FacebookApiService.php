@@ -17,9 +17,18 @@ use Symfony\Component\Yaml\Exception\RuntimeException;
 
 class FacebookApiService
 {
+    private static $FB_OBJECT = null;
+
     private $FB_APP_ID;
     private $FB_APP_SECRET;
     private $DEFAULT_GRAPH_VERSION;
+
+    private const USER_PERMISSIONS = [
+        "email",
+        "public_profile",
+        "user_birthday",
+        "user_managed_groups"
+    ];
 
     /**
      * @var SessionInterface
@@ -54,20 +63,22 @@ class FacebookApiService
      */
     public function getFacebookObject()
     {
+        // Facebook Object created using Singleton
+        if (FacebookApiService::$FB_OBJECT === null) {
+            if (!$this->session->isStarted())
+            {
+                $this->session->start();
+            }
 
-        if (!$this->session->isStarted())
-        {
-            $this->session->start();
+            FacebookApiService::$FB_OBJECT = new Facebook([
+                'app_id' => $this->FB_APP_ID,
+                'app_secret' => $this->FB_APP_SECRET,
+                'default_graph_version' => $this->DEFAULT_GRAPH_VERSION,
+                'persistent_data_handler'=>'session'
+            ]);
         }
 
-        $fb = new Facebook([
-            'app_id' => $this->FB_APP_ID,
-            'app_secret' => $this->FB_APP_SECRET,
-            'default_graph_version' => $this->DEFAULT_GRAPH_VERSION,
-            'persistent_data_handler'=>'session'
-        ]);
-
-        return $fb;
+        return FacebookApiService::$FB_OBJECT;
     }
 
     /**
@@ -125,25 +136,6 @@ class FacebookApiService
         $oauth2client = $this->getFacebookObject()->getOAuth2Client();
         return $oauth2client->debugToken($facebookToken)->getUserId();
     }
-
-    /**
-     * @param $fbToken
-     * @return \Facebook\GraphNodes\GraphUser
-     */
-    public function getGraphUserProfile($fbToken)
-    {
-        $fb = $this->getFacebookObject();
-
-        try {
-            $response = $fb->get("/me?fields=first_name,last_name,email,birthday", $fbToken);
-            return $response->getGraphUser();
-
-        } catch (FacebookSDKException $e) {
-            $this->logger->error("Facebook Graph SDK Returned an error", ['exception' => $e]);
-            throw new RuntimeException($e);
-        }
-    }
-
     /**
      * @param $fbToken string
      * @return FacebookUser
@@ -159,6 +151,65 @@ class FacebookApiService
         $user->setFacebookAuthToken($fbToken);
 
         return $user;
+    }
+
+    /**
+     * @param $appRedirectUrl string the URL to where facebook should redirect the user after a successful login
+     * @return string representing the Facebook Login Url for the user to click
+     */
+    public function getFacebookLoginUrl($appRedirectUrl)
+    {
+        $helper = $this->getFacebookObject()->getRedirectLoginHelper();
+        return $helper->getLoginUrl($appRedirectUrl, FacebookApiService::USER_PERMISSIONS);
+    }
+
+    /**
+     * @param $endpoint string the Facebook URL that need querying (i.e. /me/groups?fields=name,id)
+     * @param $fbToken string the Facebook Authentication Token
+     * @return \Facebook\FacebookResponse
+     */
+    private function getFromFacebookEndpoint($endpoint, $fbToken)
+    {
+        $fb = $this->getFacebookObject();
+        try {
+            $response = $fb->get($endpoint, $fbToken);
+            return $response;
+        } catch (FacebookSDKException $e) {
+            $this->logger->error("Facebook Graph SDK Returned an error", ['exception' => $e]);
+            throw new RuntimeException($e);
+        }
+    }
+
+    /**
+     * @param $fbToken
+     * @return \Facebook\GraphNodes\GraphUser
+     */
+    public function getGraphUserProfile($fbToken)
+    {
+        try {
+            $response = $this->getFromFacebookEndpoint("/me?fields=first_name,last_name,email,birthday", $fbToken);
+            return $response->getGraphUser();
+        } catch (FacebookSDKException $e) {
+            $this->logger->error("Could not extract Graph User from Facebook Response", ['exception' => $e]);
+            throw new RuntimeException($e);
+        }
+    }
+
+    /**
+     * @param $user FacebookUser
+     * @return array of Facebook Groups
+     */
+    public function getGroupsWhereUserIsAdmin($user)
+    {
+        $fbToken = $user->getFacebookAuthToken();
+
+        try {
+            $response = $this->getFromFacebookEndpoint("/me/groups", $fbToken);
+            return $response->getGraphEdge()->asArray();
+        } catch (FacebookSDKException $e) {
+            $this->logger->error("Could not extract Graph Group from Facebook Response", ['exception' => $e]);
+            throw new RuntimeException($e);
+        }
     }
 }
 
