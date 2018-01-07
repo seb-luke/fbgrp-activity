@@ -1,13 +1,28 @@
 security:
     # https://symfony.com/doc/current/book/security.html#where-do-users-come-from-user-providers
     providers:
-        in_memory: { memory: ~ }
+        #in_memory: { memory: ~ }
+        facebook_user_provider:
+            id: App\Security\User\FacebookUserProvider
+
+    role_hierarchy:
+            ROLE_ADMIN:       ROLE_USER
+            ROLE_SUPER_ADMIN: ROLE_ADMIN
+
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
-            anonymous: ~
+            #anonymous: ~
+            pattern: ^/warriors
+            simple_preauth:
+                authenticator: App\Security\FacebookApiAuthenticator
+            provider: facebook_user_provider
+
+    access_control:
+        - { path: ^/login , roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/loggedin , roles: IS_AUTHENTICATED_ANONYMOUSLY }
 
             # activate different ways to authenticate
 
