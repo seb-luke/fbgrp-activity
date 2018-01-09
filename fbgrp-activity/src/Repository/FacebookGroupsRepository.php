@@ -13,6 +13,14 @@ class FacebookGroupsRepository extends ServiceEntityRepository
         parent::__construct($registry, FacebookGroups::class);
     }
 
+    /**
+     * @return FacebookGroups[]
+     */
+    public function findGroupsThatNeedActivityChecking(): array
+    {
+        return $this->findBy(['checkForActivity' => true]);
+    }
+
     /*
     public function findBySomething($value)
     {

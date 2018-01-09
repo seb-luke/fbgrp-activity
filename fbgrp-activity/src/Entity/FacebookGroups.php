@@ -46,12 +46,19 @@ class FacebookGroups
      */
     private $secondaryGroupId;
 
+    /**
+     * @var boolean
+     * @ORM\Column(type="boolean", nullable=false)
+     */
+    private $checkForActivity;
+
     public function __construct($facebookGroupId, $adminId, $name)
     {
         $this->fbGroupId = $facebookGroupId;
         $this->mainAdminId = $adminId;
         $this->name = $name;
         $this->isPrimaryGroup = true;
+        $this->checkForActivity = false;
     }
 
     /**
@@ -132,5 +139,21 @@ class FacebookGroups
     public function setSecondaryGroupId(string $secondaryGroupId): void
     {
         $this->secondaryGroupId = $secondaryGroupId;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCheckForActivity(): bool
+    {
+        return $this->checkForActivity;
+    }
+
+    /**
+     * @param bool $checkForActivity
+     */
+    public function setCheckForActivity(bool $checkForActivity): void
+    {
+        $this->checkForActivity = $checkForActivity;
     }
 }

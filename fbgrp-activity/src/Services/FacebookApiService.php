@@ -8,6 +8,7 @@
 namespace App\Services;
 
 
+use App\Entity\FacebookGroups;
 use App\Entity\FacebookUser;
 use Facebook\Exceptions\FacebookSDKException;
 use Facebook\Facebook;
@@ -177,7 +178,7 @@ class FacebookApiService
             $response = $fb->get($endpoint, $fbToken);
             return $response;
         } catch (FacebookSDKException $e) {
-            $this->logger->error("Facebook Graph SDK Returned an error", ['exception' => $e]);
+            $this->logger->error("Facebook Graph SDK Returned an error", ['exception' => $e->getTraceAsString()]);
             throw new RuntimeException($e);
         }
     }
@@ -192,7 +193,7 @@ class FacebookApiService
             $response = $this->getFromFacebookEndpoint("/me?fields=first_name,last_name,email,birthday", $fbToken);
             return $response->getGraphUser();
         } catch (FacebookSDKException $e) {
-            $this->logger->error("Could not extract Graph User from Facebook Response", ['exception' => $e]);
+            $this->logger->error("Could not extract Graph User from Facebook Response", ['exception' => $e->getTraceAsString()]);
             throw new RuntimeException($e);
         }
     }
@@ -209,7 +210,7 @@ class FacebookApiService
             $response = $this->getFromFacebookEndpoint("/me/groups", $fbToken);
             return $response->getGraphEdge()->asArray();
         } catch (FacebookSDKException $e) {
-            $this->logger->error("Could not extract Graph Group from Facebook Response", ['exception' => $e]);
+            $this->logger->error("Could not extract Graph Group from Facebook Response", ['exception' => $e->getTraceAsString()]);
             throw new RuntimeException($e);
         }
     }
@@ -227,7 +228,7 @@ class FacebookApiService
             $response = $this->getFromFacebookEndpoint("/" . $grpId, $fbToken);
             return $response->getGraphGroup();
         } catch (FacebookSDKException $e) {
-            $this->logger->error("Could not generate Graph Group from Facebook Response", ['exception' => $e]);
+            $this->logger->error("Could not generate Graph Group from Facebook Response", ['exception' => $e->getTraceAsString()]);
             throw new RuntimeException($e);
         }
     }
@@ -244,7 +245,7 @@ class FacebookApiService
             $response = $this->getFromFacebookEndpoint("/me/accounts?fields=name,id", $fbToken);
             return $response->getGraphEdge()->asArray();
         } catch (FacebookSDKException $e) {
-            $this->logger->error("Could not generate Graph Edge for page from Facebook Response", ['exception' => $e]);
+            $this->logger->error("Could not generate Graph Edge for page from Facebook Response", ['exception' => $e->getTraceAsString()]);
             throw new RuntimeException($e);
         }
     }
@@ -262,7 +263,7 @@ class FacebookApiService
             $response = $this->getFromFacebookEndpoint(sprintf('/%s/members', $groupId), $fbToken);
             return $response->getGraphEdge();
         } catch (FacebookSDKException $e) {
-            $this->logger->error("Could not generate Graph Edge for users of group from Facebook Response", ['exception' => $e]);
+            $this->logger->error("Could not generate Graph Edge for users of group from Facebook Response", ['exception' => $e->getTraceAsString()]);
             throw new RuntimeException($e);
         }
     }
@@ -276,7 +277,131 @@ class FacebookApiService
         try {
             return $this->getFacebookObject()->next($feedEdge);
         } catch (FacebookSDKException $e) {
-            $this->logger->error("Could not navigate to next edge feed page", ['exception' => $e]);
+            $this->logger->error("Could not navigate to next edge feed page", ['exception' => $e->getTraceAsString()]);
+            throw new RuntimeException($e);
+        }
+    }
+
+    /**
+     * @param $user FacebookUser
+     * @param $group FacebookGroups
+     * @param null $startTime int timestamp
+     * @param null $endTime int timestamp
+     * @return GraphEdge
+     */
+    public function getOneDayFeedOfGroup($user, $group, $startTime = null, $endTime = null)
+    {
+        $fbToken = $user->getFacebookAuthToken();
+
+        $qParams = [];
+        if ($startTime) {
+            $qParams['since'] = $startTime;
+        }
+
+        if ($endTime) {
+            $qParams['until'] = $endTime;
+        }
+
+        try {
+            $response = $this->getFromFacebookEndpoint(
+                sprintf("/%s/feed?%s", $group->getId(), http_build_query($qParams)),
+                $fbToken
+            );
+            return $response->getGraphEdge();
+        } catch (FacebookSDKException $e) {
+            $this->logger->error("Could not generate Graph Edge for feed of group from Facebook Response", ['exception' => $e->getTraceAsString()]);
+            throw new RuntimeException($e);
+        }
+    }
+
+    /**
+     * @param $user FacebookUser
+     * @param $postId int
+     * @return \Facebook\GraphNodes\GraphNode
+     */
+    public function getPostFromId($user, $postId)
+    {
+        $fbToken = $user->getFacebookAuthToken();
+
+        try {
+            $response = $this->getFromFacebookEndpoint('/'.$postId, $fbToken);
+            return $response->getGraphNode();
+        } catch (FacebookSDKException $e) {
+            $this->logger->error("Could not generate Graph Edge for post from Facebook Response", ['exception' => $e->getTraceAsString()]);
+            throw new RuntimeException($e);
+        }
+
+    }
+
+    /**
+     * @param $user FacebookUser
+     * @param $pageId string
+     * @return \Facebook\GraphNodes\GraphPage
+     */
+    public function getPageToken($user, $pageId)
+    {
+        $fbToken = $user->getFacebookAuthToken();
+
+        try {
+            $response = $this->getFromFacebookEndpoint(sprintf('/%s/?fields=access_token', $pageId), $fbToken);
+            return $response->getGraphPage();
+
+        } catch (FacebookSDKException $e) {
+            $this->logger->error("Could not generate Graph Edge for page from Facebook Response", ['exception' => $e->getTraceAsString()]);
+            throw new RuntimeException($e);
+        }
+    }
+
+    /**
+     * @param $pageToken string
+     * @param $postID string
+     * @return GraphEdge
+     */
+    public function getReactionsForPost($pageToken, $postID)
+    {
+
+        try {
+            $response = $this->getFromFacebookEndpoint($postID.'/reactions', $pageToken);
+            return $response->getGraphEdge();
+
+        } catch (FacebookSDKException $e) {
+            $this->logger->error("Could not generate Graph Edge for page from Facebook Response", ['exception' => $e->getTraceAsString()]);
+            throw new RuntimeException($e);
+        }
+    }
+
+    /**
+     * @param $user FacebookUser
+     * @param $postID string
+     * @return GraphEdge
+     */
+    public function getLikesForPost($user, $postID)
+    {
+        $fbToken = $user->getFacebookAuthToken();
+
+        try {
+            $response = $this->getFromFacebookEndpoint($postID.'/likes', $fbToken);
+            return $response->getGraphEdge();
+
+        } catch (FacebookSDKException $e) {
+            $this->logger->error("Could not generate Graph Edge for page from Facebook Response", ['exception' => $e->getTraceAsString()]);
+            throw new RuntimeException($e);
+        }
+    }
+
+    /**
+     * @param $userId string
+     * @param $fbToken string
+     * @return \Facebook\GraphNodes\GraphUser
+     */
+    public function getUserProfile($userId, $fbToken)
+    {
+        try {
+            $response = $this->getFromFacebookEndpoint('/'.$userId, $fbToken);
+            return $response->getGraphUser();
+
+        } catch (FacebookSDKException $e) {
+            $this->logger->error("Could not generate Graph Edge for user profile from Facebook Response", ['exception' => $e->getTraceAsString()]);
             throw new RuntimeException($e);
         }
     }
