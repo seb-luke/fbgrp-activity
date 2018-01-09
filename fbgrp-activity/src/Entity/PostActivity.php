@@ -32,7 +32,7 @@ class PostActivity
     /**
      * @var MyDateTime
      * @ORM\Id()
-     * @ORM\Column(type="date", nullable=false)
+     * @ORM\Column(type="mydatetime", nullable=false)
      */
     private $date;
 

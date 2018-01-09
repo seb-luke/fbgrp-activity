@@ -27,7 +27,7 @@ class MyDateTimeType extends DateTimeType
             return $dateTime;
         }
 
-        return new MyDateTime('@' . $dateTime->format('Y-m-d H:i:s'));
+        return new MyDateTime($dateTime->format('Y-m-d'));
     }
 
     public function getName()
