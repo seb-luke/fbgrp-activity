@@ -9,6 +9,10 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\FacebookGroupUsersRepository")
+ * @ORM\Table(indexes={
+ *     @ORM\Index(name="idxGroupActive", columns={"fb_group_id", "is_active"}),
+ *     @ORM\Index(name="idxIsMemberIsActive", columns={"is_active", "is_member"}),
+ * })
  * @UniqueEntity(
  *     fields={"fbUserId", "fbGroupId"}
  * )
@@ -52,6 +56,12 @@ class FacebookGroupUsers
      * @ORM\Column(type="boolean", nullable=false)
      */
     private $isAdmin;
+
+    /**
+     * @var boolean
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $isMember;
 
     public function __construct($facebookUserId, $facebookGroupId, $userFullName, $isAdmin = false)
     {
@@ -128,6 +138,22 @@ class FacebookGroupUsers
     }
 
     /**
+     * @return bool
+     */
+    public function isMember(): bool
+    {
+        return $this->isMember;
+    }
+
+    /**
+     * @param bool $isMember
+     */
+    public function setIsMember(bool $isMember): void
+    {
+        $this->isMember = $isMember;
+    }
+
+    /**
      * @throws WarriorException
      */
     public function removeFromGroup(): void
@@ -140,5 +166,11 @@ class FacebookGroupUsers
             throw UserAlreadyRemovedException::Instantiate($this->getFbUserId(), $this->getFbGroupId(),
                                                             $this->isActive, $this->getDateOfRemoval());
         }
+    }
+
+    public function updateAfterUserExited(): void
+    {
+        $this->isActive = false;
+        $this->dateOfRemoval = NULL;
     }
 }

@@ -401,7 +401,7 @@ class FacebookApiService
             return $response->getGraphUser();
 
         } catch (FacebookSDKException $e) {
-            $this->logger->error("Could not generate Graph Edge for user profile from Facebook Response", ['exception' => $e->getTraceAsString()]);
+            $this->logger->error("Could not generate Graph Edge for page from Facebook Response", ['exception' => $e->getTraceAsString()]);
             throw new RuntimeException($e);
         }
     }

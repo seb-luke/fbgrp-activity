@@ -13,16 +13,12 @@ class PostActivityRepository extends ServiceEntityRepository
         parent::__construct($registry, PostActivity::class);
     }
 
-    /*
-    public function findBySomething($value)
+    /**
+     * @param \DateTime $date
+     * @return array
+     */
+    public function getActivityByDate(\DateTime $date) : array
     {
-        return $this->createQueryBuilder('p')
-            ->where('p.something = :value')->setParameter('value', $value)
-            ->orderBy('p.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+        return $this->findBy(['date' => $date]);
     }
-    */
 }
