@@ -2,12 +2,16 @@
 
 namespace App\Command;
 
+use App\DoctrineUtils\MyDateTime;
 use App\Entity\FacebookGroups;
 use App\Entity\FacebookGroupUsers;
 use App\Entity\FacebookUser;
+use App\Entity\InactivityLog;
+use App\Entity\PostActivity;
 use App\Repository\FacebookGroupsRepository;
 use App\Repository\FacebookGroupUsersRepository;
 use App\Repository\FacebookUserRepository;
+use App\Repository\PostActivityRepository;
 use App\Services\FacebookApiService;
 use Doctrine\ORM\EntityManagerInterface;
 use Facebook\GraphNodes\GraphEdge;
@@ -87,7 +91,7 @@ class AppMoveInactiveUsersCommand extends Command
     private function handleGroup(FacebookGroups $group)
     {
         date_default_timezone_set('UTC');
-        $yesterday = new \DateTime('yesterday');
+        $yesterday = new MyDateTime('yesterday');
 
         /** @var FacebookUserRepository $fbUserRepository */
         $fbUserRepository = $this->em->getRepository(FacebookUser::class);
@@ -97,7 +101,9 @@ class AppMoveInactiveUsersCommand extends Command
         $this->checkUpdateUsersOfGroup($mainAdmin, $group);
 
         // at this point we know that every user with is_active=true needs to be checked for activity
+        $this->updateInactivityLog($group, $yesterday);
 
+        $this->em->flush();
     }
 
     /**
@@ -146,8 +152,6 @@ class AppMoveInactiveUsersCommand extends Command
                 $group->getName()
             ));
         }
-
-        $this->em->flush();
     }
 
     /**
@@ -183,38 +187,47 @@ class AppMoveInactiveUsersCommand extends Command
         }
     }
 
+    /**
+     * @param $group FacebookGroups
+     * @param MyDateTime $date
+     */
+    private function updateInactivityLog($group, MyDateTime $date)
+    {
+        /** @var FacebookGroupUsersRepository $groupUserRepo */
+        $groupUserRepo = $this->em->getRepository(FacebookGroupUsers::class);
+        /** @var PostActivityRepository $postActivityRepo */
+        $postActivityRepo = $this->em->getRepository(PostActivity::class);
 
+        $users = $groupUserRepo->getActiveNormalUsers($group->getId());
+        foreach ($users as $user) {
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            $activity = $postActivityRepo->getActivity($user->getId(), $group->getId(), $date);
+            if ($activity == null) {
+                // it means that this $date day this user was not active
+                $inactivity = new InactivityLog($user->getId(), $group->getId(), $date);
+                $this->em->persist($inactivity);
+            }
+        }
+    }
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

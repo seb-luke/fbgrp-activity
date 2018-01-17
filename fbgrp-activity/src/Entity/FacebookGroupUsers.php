@@ -10,7 +10,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\FacebookGroupUsersRepository")
  * @ORM\Table(indexes={
- *     @ORM\Index(name="idxGroupActive", columns={"fb_group_id", "is_active"}),
+ *     @ORM\Index(name="idxGroupActive", columns={"fb_group_id", "is_active", "is_admin"}),
  *     @ORM\Index(name="idxIsMemberIsActive", columns={"is_active", "is_member"}),
  * })
  * @UniqueEntity(

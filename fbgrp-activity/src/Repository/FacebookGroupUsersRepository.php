@@ -34,7 +34,7 @@ class FacebookGroupUsersRepository extends ServiceEntityRepository
 
     /**
      * @param $groupId int
-     * @return array
+     * @return FacebookGroupUsers[]
      */
     public function findActiveGroupUsers($groupId)
     {
@@ -46,13 +46,26 @@ class FacebookGroupUsersRepository extends ServiceEntityRepository
 
     /**
      * There users represent an anomaly => it means they exited the group on their own choice
-     * @return array
+     * @return FacebookGroupUsers[]
      */
     public function getNonMemberActiveUsers()
     {
         return $this->findBy([
             'isActive' => true,
             'isMember' => false
+        ]);
+    }
+
+    /**
+     * @param $fbGroupId int
+     * @return FacebookGroupUsers[]
+     */
+    public function getActiveNormalUsers($fbGroupId)
+    {
+        return $this->findBy([
+            'fbGroupId' => $fbGroupId,
+            'isActive' => true,
+            'isAdmin' => false,
         ]);
     }
 }
