@@ -36,6 +36,16 @@ class InactivityLog
      */
     private $date;
 
+    /**
+     * @var FacebookGroupUsers
+     * @ORM\ManyToOne(targetEntity="App\Entity\FacebookGroupUsers", inversedBy="inactivityLog")
+     * @ORM\JoinColumns({
+     *     @ORM\JoinColumn(name="fb_user_id", referencedColumnName="fb_user_id"),
+     *     @ORM\JoinColumn(name="fb_group_id", referencedColumnName="fb_group_id")
+     * })
+     */
+    private $fbGroupUser;
+
 
     /**
      * PostActivity constructor.
@@ -72,5 +82,13 @@ class InactivityLog
     public function getDate(): MyDateTime
     {
         return $this->date;
+    }
+
+    /**
+     * @return FacebookGroupUsers
+     */
+    public function getFbGroupUser(): FacebookGroupUsers
+    {
+        return $this->fbGroupUser;
     }
 }

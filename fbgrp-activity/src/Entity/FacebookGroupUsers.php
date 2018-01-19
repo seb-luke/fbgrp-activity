@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Exceptions\UserAlreadyRemovedException;
 use App\Exceptions\WarriorException;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
@@ -63,6 +64,21 @@ class FacebookGroupUsers
      */
     private $isMember;
 
+
+    /**
+     * @var ArrayCollection
+     * @ORM\OneToMany(targetEntity="App\Entity\InactivityLog", mappedBy="fbGroupUser")
+
+     */
+    private $inactivityLog;
+
+    /**
+     * FacebookGroupUsers constructor.
+     * @param $facebookUserId
+     * @param $facebookGroupId
+     * @param $userFullName
+     * @param bool $isAdmin
+     */
     public function __construct($facebookUserId, $facebookGroupId, $userFullName, $isAdmin = false)
     {
         $this->fbUserId = $facebookUserId;
@@ -71,6 +87,8 @@ class FacebookGroupUsers
         $this->isActive = true;
         $this->dateOfRemoval = null;
         $this->isAdmin = $isAdmin;
+
+        $this->inactivityLog = new ArrayCollection();
     }
 
     /**
