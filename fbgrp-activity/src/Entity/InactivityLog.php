@@ -53,11 +53,12 @@ class InactivityLog
      * @param $facebookGroupId string
      * @param MyDateTime $date
      */
-    public function __construct($facebookUserId, $facebookGroupId, MyDateTime $date)
+    public function __construct($facebookUserId, $facebookGroupId, MyDateTime $date, FacebookGroupUsers $user)
     {
         $this->fbUserId = $facebookUserId;
         $this->fbGroupId = $facebookGroupId;
         $this->date = $date;
+        $this->fbGroupUser = $user;
     }
 
     /**

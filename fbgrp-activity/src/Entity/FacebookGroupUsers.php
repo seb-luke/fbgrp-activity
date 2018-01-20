@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Exceptions\UserAlreadyRemovedException;
 use App\Exceptions\WarriorException;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
@@ -66,7 +67,7 @@ class FacebookGroupUsers
 
 
     /**
-     * @var ArrayCollection
+     * @var Collection|InactivityLog[]
      * @ORM\OneToMany(targetEntity="App\Entity\InactivityLog", mappedBy="fbGroupUser")
 
      */
@@ -190,5 +191,13 @@ class FacebookGroupUsers
     {
         $this->isActive = false;
         $this->dateOfRemoval = NULL;
+    }
+
+    /**
+     * @return Collection|InactivityLog[]
+     */
+    public function getInactivityLog()
+    {
+        return $this->inactivityLog;
     }
 }

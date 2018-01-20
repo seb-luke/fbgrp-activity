@@ -62,13 +62,23 @@ class AppMoveInactiveUsersCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-
+        $removedUsersPerGroup = [];
         $groups = $this->getGroupsToCheck();
         foreach ($groups as $group) {
-            $this->handleGroup($group);
+            $removedUsers = $this->handleGroup($group);
+
+            array_push($removedUsersPerGroup, [
+                'group' => $group->getName(),
+                'removedUsers' => $removedUsers
+            ]);
         }
 
-        $io->success('Users were moved.');
+        $msg = "Users removed from groups:\n";
+        foreach ($removedUsersPerGroup as $removed) {
+            $msg .= sprintf("    - %d users removed from group '%s'\n", $removed['removedUsers'], $removed['group']);
+        }
+
+        $io->success($msg);
     }
 
 
@@ -87,6 +97,7 @@ class AppMoveInactiveUsersCommand extends Command
 
     /**
      * @param FacebookGroups $group
+     * @return int
      */
     private function handleGroup(FacebookGroups $group)
     {
@@ -102,8 +113,11 @@ class AppMoveInactiveUsersCommand extends Command
 
         // at this point we know that every user with is_active=true needs to be checked for activity
         $this->updateInactivityLog($group, $yesterday);
+        // and now we can remove users that have 3 inactive days
+        $removedUsers = $this->removeInactiveUsers($mainAdmin, $group,3);
 
         $this->em->flush();
+        return $removedUsers;
     }
 
     /**
@@ -204,10 +218,95 @@ class AppMoveInactiveUsersCommand extends Command
             $activity = $postActivityRepo->getActivity($user->getId(), $group->getId(), $date);
             if ($activity == null) {
                 // it means that this $date day this user was not active
-                $inactivity = new InactivityLog($user->getId(), $group->getId(), $date);
+                $inactivity = new InactivityLog($user->getId(), $group->getId(), $date, $user);
                 $this->em->persist($inactivity);
             }
         }
+    }
+
+    /**
+     * @param $mainAdmin FacebookUser
+     * @param $group FacebookGroups
+     * @param $inactiveDays int
+     * @return int
+     */
+    private function removeInactiveUsers($mainAdmin, $group, $inactiveDays)
+    {
+        /** @var FacebookGroupUsersRepository $groupUserRepo */
+        $groupUserRepo = $this->em->getRepository(FacebookGroupUsers::class);
+        $removedUsers = 0;
+
+        $users = $groupUserRepo->getActiveNormalUsers($group->getId());
+        foreach ($users as $user) {
+
+            $inactivity = $user->getInactivityLog();
+            $currentInactivity = $this->getCurrentInactivity($inactivity);
+
+            if (sizeof($currentInactivity) > $inactiveDays) {
+                //TODO remove user from group
+
+                if (strpos($user->getFullName(), "customTestName") !== false) {
+
+
+                }
+
+                $removedUsers++;
+            }
+
+
+
+        }
+
+        return $removedUsers;
+    }
+
+    /**
+     * @return array
+     */
+    private function generateBeginEndMonth()
+    {
+        $yesterday = new \DateTime('yesterday');
+        $actualMonth = $yesterday->format('n');
+
+        if ($actualMonth <= 3) {
+            $begin = 1;
+            $end = 3;
+        } elseif ($actualMonth > 3 && $actualMonth <= 6) {
+            $begin = 3;
+            $end = 6;
+        } elseif ($actualMonth > 6 && $actualMonth <= 9) {
+            $begin = 6;
+            $end = 9;
+        } else {
+            $begin = 9;
+            $end = 12;
+        }
+
+        return [
+            'beginMonth' => $begin,
+            'endMonth' => $end
+        ];
+    }
+
+    /**
+     * @param $inactivityArray InactivityLog[]
+     * @return InactivityLog[]
+     */
+    private function getCurrentInactivity($inactivityArray)
+    {
+        $currentInactivityLog = [];
+        $dateComparison = $this->generateBeginEndMonth();
+
+        foreach ($inactivityArray as $inactivity) {
+
+            $inactivityMonth = $inactivity->getDate()->format('n');
+
+            if ($inactivityMonth >= $dateComparison['beginMonth'] && $inactivityMonth < $dateComparison['endMonth']) {
+                array_push($currentInactivityLog, $inactivity);
+            }
+        }
+
+        return $currentInactivityLog;
     }
 
 
