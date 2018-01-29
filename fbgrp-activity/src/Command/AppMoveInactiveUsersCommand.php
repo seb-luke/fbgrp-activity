@@ -259,7 +259,7 @@ class AppMoveInactiveUsersCommand extends Command
             if (sizeof($currentInactivity) > $inactiveDays) {
                 //TODO remove user from group
 
-                if (strpos($user->getFullName(), "Noemi Luca") !== false) {
+                if (strpos($user->getFullName(), "Test Name") !== false) {
 
                     if ($group->getSecondaryGroupId() != null) {
 //                        $this->fbService->addUserToGroup($user->getId(), $group->getSecondaryGroupId(), $fbToken);
