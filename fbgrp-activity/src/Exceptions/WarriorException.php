@@ -8,7 +8,7 @@
 namespace App\Exceptions;
 
 
-class WarriorException extends \Exception
+class WarriorException extends \RuntimeException
 {
 
 }

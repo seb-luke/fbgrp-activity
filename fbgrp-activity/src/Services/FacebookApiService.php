@@ -10,12 +10,12 @@ namespace App\Services;
 
 use App\Entity\FacebookGroups;
 use App\Entity\FacebookUser;
+use App\Exceptions\WarriorException;
 use Facebook\Exceptions\FacebookSDKException;
 use Facebook\Facebook;
 use Facebook\GraphNodes\GraphEdge;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\Yaml\Exception\RuntimeException;
 
 class FacebookApiService
 {
@@ -73,12 +73,16 @@ class FacebookApiService
                 $this->session->start();
             }
 
-            FacebookApiService::$FB_OBJECT = new Facebook([
-                'app_id' => $this->FB_APP_ID,
-                'app_secret' => $this->FB_APP_SECRET,
-                'default_graph_version' => $this->DEFAULT_GRAPH_VERSION,
-                'persistent_data_handler'=>'session'
-            ]);
+            try {
+                FacebookApiService::$FB_OBJECT = new Facebook([
+                    'app_id' => $this->FB_APP_ID,
+                    'app_secret' => $this->FB_APP_SECRET,
+                    'default_graph_version' => $this->DEFAULT_GRAPH_VERSION,
+                    'persistent_data_handler' => 'session'
+                ]);
+            } catch (FacebookSDKException $e) {
+                throw new WarriorException("Could not create the Facebook API Service Object", $e);
+            }
         }
 
         return FacebookApiService::$FB_OBJECT;
@@ -101,7 +105,7 @@ class FacebookApiService
                 [
                     "exception" => $e
                 ]);
-            throw new RuntimeException($e);
+            throw new WarriorException($e);
         }
 
         if (! isset($accessToken)) {
@@ -118,7 +122,7 @@ class FacebookApiService
                 $this->logger->error("Bad Request when trying to get Auth Token after redirect");
             }
 
-            throw new RuntimeException("Could not get Facebook Auth Token after redirect. Check logs.");
+            throw new WarriorException("Could not get Facebook Auth Token after redirect. Check logs.");
         }
 
         $this->session->set("fbAuthTkn", $accessToken);
@@ -179,7 +183,25 @@ class FacebookApiService
             return $response;
         } catch (FacebookSDKException $e) {
             $this->logger->error("Facebook Graph SDK Returned an error", ['exception' => $e->getTraceAsString()]);
-            throw new RuntimeException($e);
+            throw new WarriorException($e);
+        }
+    }
+
+    /**
+     * @param $endpoint string the Facebook URL that needs posting to
+     * @param $postBody array
+     * @param $fbToken string the Facebook Authentication Token
+     * @return \Facebook\FacebookResponse
+     */
+    private function postToFacebookEndpoint($endpoint, $postBody, $fbToken)
+    {
+        $fb = $this->getFacebookObject();
+        try {
+            $response = $fb->post($endpoint, $postBody, $fbToken);
+            return $response;
+        } catch (FacebookSDKException $e) {
+            $this->logger->error("Facebook Graph SDK Returned an error", ['exception' => $e->getTraceAsString()]);
+            throw new WarriorException($e);
         }
     }
 
@@ -194,7 +216,7 @@ class FacebookApiService
             return $response->getGraphUser();
         } catch (FacebookSDKException $e) {
             $this->logger->error("Could not extract Graph User from Facebook Response", ['exception' => $e->getTraceAsString()]);
-            throw new RuntimeException($e);
+            throw new WarriorException($e);
         }
     }
 
@@ -211,7 +233,7 @@ class FacebookApiService
             return $response->getGraphEdge()->asArray();
         } catch (FacebookSDKException $e) {
             $this->logger->error("Could not extract Graph Group from Facebook Response", ['exception' => $e->getTraceAsString()]);
-            throw new RuntimeException($e);
+            throw new WarriorException($e);
         }
     }
 
@@ -229,7 +251,7 @@ class FacebookApiService
             return $response->getGraphGroup();
         } catch (FacebookSDKException $e) {
             $this->logger->error("Could not generate Graph Group from Facebook Response", ['exception' => $e->getTraceAsString()]);
-            throw new RuntimeException($e);
+            throw new WarriorException($e);
         }
     }
 
@@ -246,7 +268,7 @@ class FacebookApiService
             return $response->getGraphEdge()->asArray();
         } catch (FacebookSDKException $e) {
             $this->logger->error("Could not generate Graph Edge for page from Facebook Response", ['exception' => $e->getTraceAsString()]);
-            throw new RuntimeException($e);
+            throw new WarriorException($e);
         }
     }
 
@@ -264,7 +286,7 @@ class FacebookApiService
             return $response->getGraphEdge();
         } catch (FacebookSDKException $e) {
             $this->logger->error("Could not generate Graph Edge for users of group from Facebook Response", ['exception' => $e->getTraceAsString()]);
-            throw new RuntimeException($e);
+            throw new WarriorException($e);
         }
     }
 
@@ -278,7 +300,7 @@ class FacebookApiService
             return $this->getFacebookObject()->next($feedEdge);
         } catch (FacebookSDKException $e) {
             $this->logger->error("Could not navigate to next edge feed page", ['exception' => $e->getTraceAsString()]);
-            throw new RuntimeException($e);
+            throw new WarriorException($e);
         }
     }
 
@@ -310,7 +332,7 @@ class FacebookApiService
             return $response->getGraphEdge();
         } catch (FacebookSDKException $e) {
             $this->logger->error("Could not generate Graph Edge for feed of group from Facebook Response", ['exception' => $e->getTraceAsString()]);
-            throw new RuntimeException($e);
+            throw new WarriorException($e);
         }
     }
 
@@ -328,7 +350,7 @@ class FacebookApiService
             return $response->getGraphNode();
         } catch (FacebookSDKException $e) {
             $this->logger->error("Could not generate Graph Edge for post from Facebook Response", ['exception' => $e->getTraceAsString()]);
-            throw new RuntimeException($e);
+            throw new WarriorException($e);
         }
 
     }
@@ -348,7 +370,7 @@ class FacebookApiService
 
         } catch (FacebookSDKException $e) {
             $this->logger->error("Could not generate Graph Edge for page from Facebook Response", ['exception' => $e->getTraceAsString()]);
-            throw new RuntimeException($e);
+            throw new WarriorException($e);
         }
     }
 
@@ -366,7 +388,7 @@ class FacebookApiService
 
         } catch (FacebookSDKException $e) {
             $this->logger->error("Could not generate Graph Edge for page from Facebook Response", ['exception' => $e->getTraceAsString()]);
-            throw new RuntimeException($e);
+            throw new WarriorException($e);
         }
     }
 
@@ -385,7 +407,7 @@ class FacebookApiService
 
         } catch (FacebookSDKException $e) {
             $this->logger->error("Could not generate Graph Edge for page from Facebook Response", ['exception' => $e->getTraceAsString()]);
-            throw new RuntimeException($e);
+            throw new WarriorException($e);
         }
     }
 
@@ -402,8 +424,30 @@ class FacebookApiService
 
         } catch (FacebookSDKException $e) {
             $this->logger->error("Could not generate Graph Edge for page from Facebook Response", ['exception' => $e->getTraceAsString()]);
-            throw new RuntimeException($e);
+            throw new WarriorException($e);
         }
+    }
+
+    /**
+     * @param $userId string
+     * @param $groupId string
+     * @param $fbToken string
+     * @return \Facebook\GraphNodes\GraphNode
+     */
+    public function addUserToGroup($userId, $groupId, $fbToken)
+    {
+        try {
+            $response = $this->postToFacebookEndpoint($groupId.'/members', ['member' => $userId], $fbToken);
+            return $response->getGraphNode();
+        } catch (FacebookSDKException $e) {
+            $this->logger->error(sprintf("Could not add userId '%s' to group with id '%s'", $userId, $groupId),
+                ['exception' => $e->getTraceAsString()]);
+            throw new WarriorException($e);
+        }
+    }
+
+    public function removeUserFromGroup($user, $getId, $fbToken)
+    {
     }
 }
 

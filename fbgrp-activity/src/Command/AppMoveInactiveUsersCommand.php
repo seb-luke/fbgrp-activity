@@ -37,6 +37,11 @@ class AppMoveInactiveUsersCommand extends Command
      */
     private $logger;
 
+    /**
+     * @var MyDateTime
+     */
+    private $yesterday;
+
     private $protectedFbUsers = [
         "Simona Ienea",
     ];
@@ -48,6 +53,7 @@ class AppMoveInactiveUsersCommand extends Command
         $this->em = $em;
         $this->fbService = $fb;
         $this->logger = $log;
+        $this->yesterday = new MyDateTime('yesterday');
     }
 
     protected function configure()
@@ -75,7 +81,7 @@ class AppMoveInactiveUsersCommand extends Command
 
         $msg = "Users removed from groups:\n";
         foreach ($removedUsersPerGroup as $removed) {
-            $msg .= sprintf("    - %d users removed from group '%s'\n", $removed['removedUsers'], $removed['group']);
+            $msg .= sprintf("    - %d users await removal from group '%s'\n", $removed['removedUsers'], $removed['group']);
         }
 
         $io->success($msg);
@@ -102,7 +108,6 @@ class AppMoveInactiveUsersCommand extends Command
     private function handleGroup(FacebookGroups $group)
     {
         date_default_timezone_set('UTC');
-        $yesterday = new MyDateTime('yesterday');
 
         /** @var FacebookUserRepository $fbUserRepository */
         $fbUserRepository = $this->em->getRepository(FacebookUser::class);
@@ -112,11 +117,12 @@ class AppMoveInactiveUsersCommand extends Command
         $this->checkUpdateUsersOfGroup($mainAdmin, $group);
 
         // at this point we know that every user with is_active=true needs to be checked for activity
-        $this->updateInactivityLog($group, $yesterday);
+        $this->updateInactivityLog($group, $this->yesterday);
         // and now we can remove users that have 3 inactive days
         $removedUsers = $this->removeInactiveUsers($mainAdmin, $group,3);
 
         $this->em->flush();
+//        return 0;
         return $removedUsers;
     }
 
@@ -234,6 +240,14 @@ class AppMoveInactiveUsersCommand extends Command
     {
         /** @var FacebookGroupUsersRepository $groupUserRepo */
         $groupUserRepo = $this->em->getRepository(FacebookGroupUsers::class);
+
+        $fbPageId = $group->getFbPageId();
+        if ($fbPageId == null) {
+            $fbToken = $mainAdmin->getFacebookAuthToken();
+        } else {
+            $fbToken = $this->fbService->getPageToken($mainAdmin, $fbPageId)->getAccessToken();
+        }
+
         $removedUsers = 0;
 
         $users = $groupUserRepo->getActiveNormalUsers($group->getId());
@@ -245,9 +259,12 @@ class AppMoveInactiveUsersCommand extends Command
             if (sizeof($currentInactivity) > $inactiveDays) {
                 //TODO remove user from group
 
-                if (strpos($user->getFullName(), "customTestName") !== false) {
+                if (strpos($user->getFullName(), "Noemi Luca") !== false) {
 
-
+                    if ($group->getSecondaryGroupId() != null) {
+//                        $this->fbService->addUserToGroup($user->getId(), $group->getSecondaryGroupId(), $fbToken);
+                    }
+//                    $this->fbService->removeUserFromGroup($user, $group->getId(), $fbToken);
                 }
 
                 $removedUsers++;
@@ -265,8 +282,7 @@ class AppMoveInactiveUsersCommand extends Command
      */
     private function generateBeginEndMonth()
     {
-        $yesterday = new \DateTime('yesterday');
-        $actualMonth = $yesterday->format('n');
+        $actualMonth = $this->yesterday->format('n');
 
         if ($actualMonth <= 3) {
             $begin = 1;
