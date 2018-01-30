@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\FacebookGroupUsers;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 class FacebookGroupUsersRepository extends ServiceEntityRepository
@@ -48,7 +49,7 @@ class FacebookGroupUsersRepository extends ServiceEntityRepository
      * There users represent an anomaly => it means they exited the group on their own choice
      * @return FacebookGroupUsers[]
      */
-    public function getNonMemberActiveUsers()
+    public function getNonMemberActiveUsersAnomaly()
     {
         return $this->findBy([
             'isActive' => true,
@@ -67,5 +68,44 @@ class FacebookGroupUsersRepository extends ServiceEntityRepository
             'isActive' => true,
             'isAdmin' => false,
         ]);
+    }
+
+    /**
+     * @param $fbGroupId
+     * @return FacebookGroupUsers[]
+     */
+    public function getUsersThatQuit($fbGroupId)
+    {
+        /** @var QueryBuilder $qb */
+        $qb = $this->createQueryBuilder('u');
+            $qb ->andWhere($qb->expr()->eq('u.fbGroupId', ':fbGroupId'))
+                ->andWhere($qb->expr()->eq('u.isActive', ':isActive'))
+                ->andWhere($qb->expr()->isNull('u.dateOfRemoval'));
+
+        $qb->setParameters([
+            'fbGroupId' => $fbGroupId,
+            'isActive' => false
+        ]);
+
+        return $qb->getQuery()->getArrayResult();
+    }
+    /**
+     * @param $fbGroupId
+     * @return FacebookGroupUsers[]
+     */
+    public function getRemovedUsers($fbGroupId)
+    {
+        /** @var QueryBuilder $qb */
+        $qb = $this->createQueryBuilder('u');
+        $qb ->andWhere($qb->expr()->eq('u.fbGroupId', ':fbGroupId'))
+            ->andWhere($qb->expr()->eq('u.isActive', ':isActive'))
+            ->andWhere($qb->expr()->isNotNull('u.dateOfRemoval'));
+
+        $qb->setParameters([
+            'fbGroupId' => $fbGroupId,
+            'isActive' => false
+        ]);
+
+        return $qb->getQuery()->getArrayResult();
     }
 }

@@ -21,16 +21,33 @@ class FacebookGroupsRepository extends ServiceEntityRepository
         return $this->findBy(['checkForActivity' => true]);
     }
 
-    /*
-    public function findBySomething($value)
+    /**
+     * @param $grpId
+     * @return FacebookGroups|null
+     */
+    public function findGroup($grpId): FacebookGroups
     {
-        return $this->createQueryBuilder('f')
-            ->where('f.something = :value')->setParameter('value', $value)
-            ->orderBy('f.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+        $group = $this->findBy(['fbGroupId' => $grpId]);
+
+        if ($group) {
+            return $group[0];
+        }
+
+        return null;
     }
-    */
+
+    /**
+     * @param $secondaryGroupId
+     * @return FacebookGroups|null
+     */
+    public function findPrimaryGroup($secondaryGroupId): FacebookGroups
+    {
+        $group = $this->findBy(['secondaryGroupId' => $secondaryGroupId]);
+
+        if ($group) {
+            return $group[0];
+        }
+
+        return null;
+    }
 }

@@ -1,5 +1,48 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-Manage Group
+    <h2>{{ statistics.name }}</h2>
+    <div>
+        Main admin:
+        <a target="_blank" href="https://fb.com/{{ statistics.mainAdminId }}">{{ statistics.mainAdminName }}</a>
+    </div>
+
+    <div>
+        <h3>General group statistics:</h3>
+        <ul>
+            {% if statistics.isPrimary %}
+                <li>
+                    This group is a Primary Group.
+                    {% if statistics.secondaryGroupId %}
+                        It is linked to the Secondary Group:
+                        <a href="{{ statistics.secondaryGroupId }}">"{{ statistics.secondaryGroupName }}"</a>
+                    {% endif %}
+                </li>
+            {% else %}
+                <li>
+                    This group is a Secondary Group.
+                    {% if statistics.primaryGroupId %}
+                        It is linked to the Primary Group:
+                        <a href="{{ statistics.primaryGroupId }}">"{{ statistics.primaryGroupName }}"</a>
+                    {% endif %}
+                </li>
+            {% endif %}
+
+            <li>
+                This group has
+                {% if statistics.isCheckedForActivity %}
+                    enabled
+                {% else %}
+                    disabled
+                {% endif %}
+                    to check for Like activity
+            </li>
+
+            <li>Currently there are {{ statistics.countActiveUsers }} active users on the group</li>
+            <li>Out of which {{ statistics.countNeedRemoval }} users need removal</li>
+            <li>Also {{ statistics.countUsersThatQuit }} have quite the group on their own accord</li>
+            <li>And {{ statistics.countRemovedUsers }} users were removed because of their inactivity</li>
+
+        </ul>
+    </div>
 {% endblock %}

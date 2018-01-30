@@ -305,6 +305,11 @@ class FacebookUser implements UserInterface, EquatableInterface, \Serializable
         $this->surname = $surname;
     }
 
+    public function getFullName()
+    {
+        return sprintf("%s %s", $this->surname, $this->getName());
+    }
+
     /**
      * @return \DateTime
      */

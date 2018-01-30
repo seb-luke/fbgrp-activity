@@ -5,7 +5,12 @@ namespace App\Controller;
 use App\Entity\FacebookGroups;
 use App\Entity\FacebookGroupUsers;
 use App\Entity\FacebookUser;
+use App\Entity\UsersAwaitingRemoval;
 use App\Form\FacebookGroupType;
+use App\Repository\FacebookGroupsRepository;
+use App\Repository\FacebookGroupUsersRepository;
+use App\Repository\FacebookUserRepository;
+use App\Repository\UsersAwaitingRemovalRepository;
 use App\Services\FacebookApiService;
 use Facebook\GraphNodes\GraphEdge;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -113,7 +118,9 @@ class WarriorsController extends Controller
      */
     public function warriorsManageGroup($grpId)
     {
-        return $this->render('App/Warriors/manageGroup.html.twig');
+        $statistics = $this->getGroupStatistics($grpId);
+
+        return $this->render('App/Warriors/manageGroup.html.twig', ['statistics' => $statistics]);
     }
 
 
@@ -155,4 +162,69 @@ class WarriorsController extends Controller
 
         $em->flush();
     }
+
+    /**
+     * @param $grpId
+     * @return array
+     */
+    private function getGroupStatistics($grpId)
+    {
+        $groupStatistics = [];
+
+        /** @var FacebookGroupsRepository $groupRepo */
+        $groupRepo = $this->getDoctrine()->getRepository(FacebookGroups::class);
+        /** @var FacebookUserRepository $userRepo */
+        $userRepo = $this->getDoctrine()->getRepository(FacebookUser::class);
+        /** @var FacebookGroupUsersRepository $groupUsersRepo */
+        $groupUsersRepo = $this->getDoctrine()->getRepository(FacebookGroupUsers::class);
+        /** @var UsersAwaitingRemovalRepository $userAwaitingRemovalRepo */
+        $userAwaitingRemovalRepo = $this->getDoctrine()->getRepository(UsersAwaitingRemoval::class);
+
+        $group = $groupRepo->findGroup($grpId);
+
+        if ($grpId) {
+            $groupStatistics['name'] = $group->getName();
+            $groupStatistics['isPrimary'] = $group->isPrimaryGroup();
+            $groupStatistics['isManagedByPage'] = $group->getFbPageId() != null;
+            $groupStatistics['isCheckedForActivity'] = $group->isCheckForActivity();
+
+            /** @var FacebookUser $mainAdmin */
+            $mainAdmin = $userRepo->findUserIdByFacebookId($group->getMainAdminId());
+            $groupStatistics['mainAdminName'] = $mainAdmin->getFullName();
+            $groupStatistics['mainAdminId'] = $mainAdmin->getFacebookId();
+
+            if ($group->isPrimaryGroup()) {
+                if ($group->getSecondaryGroupId()) {
+                    $secondaryGroup = $groupRepo->findGroup($group->getSecondaryGroupId());
+                    $groupStatistics['secondaryGroupName'] = $secondaryGroup->getName();
+                    $groupStatistics['secondaryGroupId'] = $secondaryGroup->getId();
+                }
+            } else {
+                $primaryGroup = $groupRepo->findPrimaryGroup($group->getId());
+                $groupStatistics['primaryGroupName'] = $primaryGroup->getName();
+                $groupStatistics['primaryGroupId'] = $primaryGroup->getId();
+            }
+
+            $groupStatistics['countActiveUsers'] = count($groupUsersRepo->getActiveNormalUsers($grpId));
+            $groupStatistics['countUsersThatQuit'] = count($groupUsersRepo->getUsersThatQuit($grpId));
+            $groupStatistics['countRemovedUsers'] = count($groupUsersRepo->getRemovedUsers($grpId));
+            $groupStatistics['countNeedRemoval'] = count($userAwaitingRemovalRepo->findAll());
+        }
+
+        return $groupStatistics;
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -8,10 +8,13 @@ use App\Entity\FacebookGroupUsers;
 use App\Entity\FacebookUser;
 use App\Entity\InactivityLog;
 use App\Entity\PostActivity;
+use App\Entity\UsersAwaitingRemoval;
 use App\Repository\FacebookGroupsRepository;
 use App\Repository\FacebookGroupUsersRepository;
 use App\Repository\FacebookUserRepository;
+use App\Repository\InactivityLogRepository;
 use App\Repository\PostActivityRepository;
+use App\Repository\UsersAwaitingRemovalRepository;
 use App\Services\FacebookApiService;
 use Doctrine\ORM\EntityManagerInterface;
 use Facebook\GraphNodes\GraphEdge;
@@ -159,7 +162,7 @@ class AppMoveInactiveUsersCommand extends Command
 
         // now if there are users with is_member=false => they exited the group on their own so we update that status
         /** @var FacebookGroupUsers $exitedUser */
-        foreach ($fbGroupUserRepository->getNonMemberActiveUsers() as $exitedUser) {
+        foreach ($fbGroupUserRepository->getNonMemberActiveUsersAnomaly() as $exitedUser) {
 
             if (in_array($exitedUser->getFullName(), $this->protectedFbUsers)) {
                 // these are the users that have disallowed apps to see their accounts
@@ -224,8 +227,17 @@ class AppMoveInactiveUsersCommand extends Command
             $activity = $postActivityRepo->getActivity($user->getId(), $group->getId(), $date);
             if ($activity == null) {
                 // it means that this $date day this user was not active
-                $inactivity = new InactivityLog($user->getId(), $group->getId(), $date, $user);
-                $this->em->persist($inactivity);
+                $inactivity = $this->em->getRepository(InactivityLog::class)->findOneBy([
+                    'fbUserId'  => $user->getId(),
+                    'fbGroupId' => $user->getFbGroupId(),
+                    'date'      => $date
+                ]);
+
+                if ($inactivity == null) {
+                    // it means this day was not yet inserted into the log
+                    $inactivity = new InactivityLog($user->getId(), $group->getId(), $date, $user);
+                    $this->em->persist($inactivity);
+                }
             }
         }
     }
@@ -240,15 +252,17 @@ class AppMoveInactiveUsersCommand extends Command
     {
         /** @var FacebookGroupUsersRepository $groupUserRepo */
         $groupUserRepo = $this->em->getRepository(FacebookGroupUsers::class);
+        /** @var UsersAwaitingRemovalRepository $usersForRemovalRepo */
+        $usersForRemovalRepo = $this->em->getRepository(UsersAwaitingRemoval::class);
 
-        $fbPageId = $group->getFbPageId();
+        /*$fbPageId = $group->getFbPageId();
         if ($fbPageId == null) {
             $fbToken = $mainAdmin->getFacebookAuthToken();
         } else {
             $fbToken = $this->fbService->getPageToken($mainAdmin, $fbPageId)->getAccessToken();
-        }
+        }*/
 
-        $removedUsers = 0;
+        $usersForRemoval = 0;
 
         $users = $groupUserRepo->getActiveNormalUsers($group->getId());
         foreach ($users as $user) {
@@ -257,24 +271,18 @@ class AppMoveInactiveUsersCommand extends Command
             $currentInactivity = $this->getCurrentInactivity($inactivity);
 
             if (sizeof($currentInactivity) > $inactiveDays) {
-                //TODO remove user from group
 
-                if (strpos($user->getFullName(), "Test Name") !== false) {
-
-                    if ($group->getSecondaryGroupId() != null) {
-//                        $this->fbService->addUserToGroup($user->getId(), $group->getSecondaryGroupId(), $fbToken);
-                    }
-//                    $this->fbService->removeUserFromGroup($user, $group->getId(), $fbToken);
+                $userForRemoval = $usersForRemovalRepo->findByGroupUser($user);
+                if ($userForRemoval == null) {
+                    $userForRemoval = new UsersAwaitingRemoval($user);
+                    $this->em->persist($userForRemoval);
                 }
-
-                $removedUsers++;
+                $usersForRemoval++;
             }
-
-
 
         }
 
-        return $removedUsers;
+        return $usersForRemoval;
     }
 
     /**

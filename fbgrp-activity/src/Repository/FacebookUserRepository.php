@@ -15,11 +15,17 @@ class FacebookUserRepository extends ServiceEntityRepository
 
     /**
      * @param $fbId
-     * @return null|object
+     * @return FacebookUser|null
      */
-    public function findUserIdByFacebookId($fbId)
+    public function findUserIdByFacebookId($fbId): FacebookUser
     {
-        return $this->findOneBy(['facebookId' => $fbId]);
+        $user = $this->findBy(['facebookId' => $fbId]);
+
+        if ($user) {
+            return $user[0];
+        }
+
+        return null;
     }
 
     /*
