@@ -37,6 +37,9 @@ class AppManageGroupActivityCommand extends Command
      */
     private $logger;
 
+    /** @var MyDateTime */
+    private $today;
+
     public function __construct(?string $name = null, EntityManagerInterface $em, FacebookApiService $fbService, LoggerInterface $logger)
     {
         parent::__construct($name);
@@ -44,6 +47,7 @@ class AppManageGroupActivityCommand extends Command
         $this->em = $em;
         $this->fbService = $fbService;
         $this->logger = $logger;
+        $this->today = new MyDateTime('today');
     }
 
     protected function configure()
@@ -57,7 +61,6 @@ class AppManageGroupActivityCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io = new SymfonyStyle($input, $output);
-
 
         $groups = $this->getGroupsToCheck();
         foreach ($groups as $group) {
@@ -91,8 +94,9 @@ class AppManageGroupActivityCommand extends Command
 
         date_default_timezone_set('UTC');
 
-        $yesterday = new \DateTime('yesterday');
-        $today = new \DateTime('today');
+        $today = $this->today;
+        $yesterday = clone $this->today;
+        $yesterday = $yesterday->modify("-1 day");
 
         $groupTodayFeed = $this->fbService->getOneDayFeedOfGroup($mainAdmin, $group, $yesterday->getTimestamp());
 
@@ -185,7 +189,8 @@ class AppManageGroupActivityCommand extends Command
      */
     private function insertActiveUsers($usersReactionArray, $group, $mainAdmin)
     {
-        $date = new MyDateTime('yesterday');
+        $date = clone $this->today;
+        $date = $date->modify("-1 days");
         $date->setTimezone(new \DateTimeZone('UTC'));
 
         foreach ($usersReactionArray as $userReactionArray) {
@@ -237,6 +242,8 @@ class AppManageGroupActivityCommand extends Command
 
         $user = new FacebookGroupUsers($userId, $group->getId(), $userName, false);
         $this->em->persist($user);
+
+        $this->logger->info(sprintf("User '%s' was added to the group '%s'", $user->getFullName(), $group->getName()));
 
         return $user;
     }
