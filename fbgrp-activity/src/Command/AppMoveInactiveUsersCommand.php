@@ -12,7 +12,6 @@ use App\Entity\UsersAwaitingRemoval;
 use App\Repository\FacebookGroupsRepository;
 use App\Repository\FacebookGroupUsersRepository;
 use App\Repository\FacebookUserRepository;
-use App\Repository\InactivityLogRepository;
 use App\Repository\PostActivityRepository;
 use App\Repository\UsersAwaitingRemovalRepository;
 use App\Services\FacebookApiService;
@@ -57,6 +56,7 @@ class AppMoveInactiveUsersCommand extends Command
         $this->fbService = $fb;
         $this->logger = $log;
         $this->yesterday = new MyDateTime('yesterday');
+
     }
 
     protected function configure()
@@ -70,7 +70,6 @@ class AppMoveInactiveUsersCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io = new SymfonyStyle($input, $output);
-
         $removedUsersPerGroup = [];
         $groups = $this->getGroupsToCheck();
         foreach ($groups as $group) {
@@ -82,11 +81,14 @@ class AppMoveInactiveUsersCommand extends Command
             ]);
         }
 
-        $msg = "Users removed from groups:\n";
+        $msg = "Inactive users from groups:\n";
+        $cnt = 0;
         foreach ($removedUsersPerGroup as $removed) {
             $msg .= sprintf("    - %d users await removal from group '%s'\n", $removed['removedUsers'], $removed['group']);
+            $cnt += $removed['removedUsers'];
         }
 
+        $this->logger->info(sprintf('In total, %d users await removal', $cnt));
         $io->success($msg);
     }
 
