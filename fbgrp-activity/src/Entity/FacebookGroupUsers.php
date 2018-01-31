@@ -181,13 +181,14 @@ class FacebookGroupUsers
         {
             $this->isActive = false;
             $this->dateOfRemoval = new \DateTime();
+            $this->setIsMember(false);
         } else {
             throw UserAlreadyRemovedException::Instantiate($this->getFbUserId(), $this->getFbGroupId(),
                                                             $this->isActive, $this->getDateOfRemoval());
         }
     }
 
-    public function updateAfterUserExited(): void
+    public function updateAfterUserExitedByHisOwn(): void
     {
         $this->isActive = false;
         $this->dateOfRemoval = NULL;

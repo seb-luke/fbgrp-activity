@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1>Remove users from "{{ group.name }}"</h1>
+
+    <div class="form">
+
+        {{ form_start(form) }}
+        {% for UsersField in form.usersRemoval %}
+
+            {% set index = UsersField.vars.value %}
+            {% set user = form.usersRemoval.vars.choices[index].data.groupUser %}
+
+            <div style="margin-top: 5px">
+                {{ form_widget(UsersField) }}
+                {{ form_label(UsersField) }}
+                <a href="https://fb.com/{{ user.fbUserId }}" target="_blank">
+                    <i class="fa fa-facebook-official" style="font-size:17px;color:#3b5998"></i>
+                </a>
+            </div>
+        {% endfor %}
+        <div class="form_submit" style="margin-top: 21px;">
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

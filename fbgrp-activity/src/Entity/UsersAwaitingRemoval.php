@@ -53,4 +53,9 @@ class UsersAwaitingRemoval
         return $this->groupUser;
     }
 
+    public function getFullName()
+    {
+        return $this->groupUser->getFullName();
+    }
+
 }

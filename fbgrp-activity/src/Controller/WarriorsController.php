@@ -7,11 +7,13 @@ use App\Entity\FacebookGroupUsers;
 use App\Entity\FacebookUser;
 use App\Entity\UsersAwaitingRemoval;
 use App\Form\FacebookGroupType;
+use App\Form\UserRemovalType;
 use App\Repository\FacebookGroupsRepository;
 use App\Repository\FacebookGroupUsersRepository;
 use App\Repository\FacebookUserRepository;
 use App\Repository\UsersAwaitingRemovalRepository;
 use App\Services\FacebookApiService;
+use Doctrine\Common\Collections\ArrayCollection;
 use Facebook\GraphNodes\GraphEdge;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -102,7 +104,7 @@ class WarriorsController extends Controller
 
             $em->flush();
 
-            return $this->redirectToRoute('warriorsGroupDetail', ["grpId" => $fbGroup->getId()]);
+            return $this->redirectToRoute('warriorsManageGroup', ["grpId" => $fbGroup->getId()]);
         }
 
         return $this->render('App/Warriors/addGroup.html.twig', [
@@ -120,7 +122,48 @@ class WarriorsController extends Controller
     {
         $statistics = $this->getGroupStatistics($grpId);
 
-        return $this->render('App/Warriors/manageGroup.html.twig', ['statistics' => $statistics]);
+        return $this->render('App/Warriors/manageGroup.html.twig', [
+            'statistics'    => $statistics,
+            'groupId'       => $grpId
+        ]);
+    }
+
+    /**
+     * @Route("/group/manage/{grpId}/removeUsers", name="warriorsGroupRemoval")
+     * @param Request $request
+     * @param $grpId
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function warriorsGroupRemoval(Request $request, $grpId)
+    {
+        $inactiveUsers = $this->getDoctrine()->getRepository(UsersAwaitingRemoval::class)->findAll();
+        /** @var FacebookGroupsRepository $groupRepo */
+        $groupRepo = $this->getDoctrine()->getRepository(FacebookGroups::class);
+        $group = $groupRepo->findGroup($grpId);
+
+        $form = $this->createForm(UserRemovalType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            /** @var UsersAwaitingRemoval[] $usersAwaitingRemoval */
+            $usersAwaitingRemoval = $form->getData()["usersRemoval"];
+
+            foreach ($usersAwaitingRemoval as $user) {
+
+                $user->getGroupUser()->removeFromGroup();
+                $this->getDoctrine()->getManager()->remove($user);
+            }
+
+            $this->getDoctrine()->getManager()->flush();
+            return $this->redirectToRoute('warriorsManageGroup', ["grpId" => $grpId]);
+        }
+
+        return $this->render('App/Warriors/removeUsersFromGroup.html.twig', [
+            'inactiveUsers' => $inactiveUsers,
+            'group'         => $group,
+            'form'          => $form->createView(),
+        ]);
     }
 
 

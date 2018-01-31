@@ -171,7 +171,7 @@ class AppMoveInactiveUsersCommand extends Command
                 continue;
             }
 
-            $exitedUser->updateAfterUserExited();
+            $exitedUser->updateAfterUserExitedByHisOwn();
             $this->logger->info(sprintf("User '%s' exited the group '%s' on their own",
                 $exitedUser->getFullName(),
                 $group->getName()
