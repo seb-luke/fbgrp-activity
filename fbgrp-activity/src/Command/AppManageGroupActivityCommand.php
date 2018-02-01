@@ -94,7 +94,7 @@ class AppManageGroupActivityCommand extends Command
 
         date_default_timezone_set('UTC');
 
-        $today = $this->today;
+        $today = clone $this->today;
         $yesterday = clone $this->today;
         $yesterday = $yesterday->modify("-1 day");
 
