@@ -48,6 +48,7 @@ class AppManageGroupActivityCommand extends Command
         $this->fbService = $fbService;
         $this->logger = $logger;
         $this->today = new MyDateTime('today');
+        $this->today->setTimezone(new \DateTimeZone('UTC'));
     }
 
     protected function configure()

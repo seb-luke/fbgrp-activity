@@ -208,7 +208,7 @@ class AppMoveInactiveUsersCommand extends Command
             $fbGroupsUser->setIsMember(true);
             $this->em->persist($fbGroupsUser);
 
-            $this->logger->info("New user added to group with id: ".$fbGroupId, ['$user' => $fbGroupsUser] );
+            $this->logger->info(sprintf("New user '%s' added with id '%s'", $fbGroupsUser->getFullName(), $fbGroupsUser->getId()));
         }
     }
 
@@ -278,7 +278,10 @@ class AppMoveInactiveUsersCommand extends Command
                 if ($userForRemoval == null) {
                     $userForRemoval = new UsersAwaitingRemoval($user);
                     $this->em->persist($userForRemoval);
+                } else {
+                    //TODO check if user has not exited on their own. If they did, remove them from the inactivity
                 }
+
                 $usersForRemoval++;
             }
 
