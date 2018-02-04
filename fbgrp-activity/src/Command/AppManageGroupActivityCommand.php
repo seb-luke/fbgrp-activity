@@ -48,7 +48,7 @@ class AppManageGroupActivityCommand extends Command
         $this->fbService = $fbService;
         $this->logger = $logger;
         $this->today = new MyDateTime('today');
-        $this->today->setTimezone(new \DateTimeZone('UTC'));
+//        $this->today->setTimezone(new \DateTimeZone('UTC'));  UTC Timezone not needed in the database, only in fb
     }
 
     protected function configure()
@@ -96,8 +96,11 @@ class AppManageGroupActivityCommand extends Command
         date_default_timezone_set('UTC');
 
         $today = clone $this->today;
+        $today->setTimezone(new \DateTimeZone('UTC'));
+
         $yesterday = clone $this->today;
         $yesterday = $yesterday->modify("-1 day");
+        $yesterday->setTimezone(new \DateTimeZone('UTC'));
 
         $groupTodayFeed = $this->fbService->getOneDayFeedOfGroup($mainAdmin, $group, $yesterday->getTimestamp());
 
@@ -192,7 +195,6 @@ class AppManageGroupActivityCommand extends Command
     {
         $date = clone $this->today;
         $date = $date->modify("-1 days");
-        $date->setTimezone(new \DateTimeZone('UTC'));
 
         foreach ($usersReactionArray as $userReactionArray) {
             /** @var FacebookGroupUsers $user */
