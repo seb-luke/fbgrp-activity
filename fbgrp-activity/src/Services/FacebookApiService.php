@@ -285,6 +285,12 @@ class FacebookApiService
             $response = $this->getFromFacebookEndpoint(sprintf('/%s/members', $groupId), $fbToken);
             return $response->getGraphEdge();
         } catch (FacebookSDKException $e) {
+            if (strpos($e->getMessage(), "Operation timed out after") !== false) {
+                // it means that the request has timed out, se we should retry;
+                $this->logger->info(sprintf("Retrying request for groupId '%s' and user '%s'", $groupId, $user->getFullName()));
+                return $this->getUsersOfGroup($groupId, $user);
+            }
+
             $this->logger->error("Could not generate Graph Edge for users of group from Facebook Response", ['exception' => $e->getTraceAsString()]);
             throw new WarriorException($e);
         }
