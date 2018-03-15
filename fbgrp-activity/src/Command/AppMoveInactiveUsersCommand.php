@@ -73,6 +73,17 @@ class AppMoveInactiveUsersCommand extends Command
         $removedUsersPerGroup = [];
         $groups = $this->getGroupsToCheck();
         foreach ($groups as $group) {
+
+            /*$startDate = new MyDateTime('2018-03-02');
+            $endDate = new MyDateTime('yesterday');
+
+            while ($startDate < $endDate) {
+                $this->yesterday = clone $startDate;
+                $removedUsers = $this->handleGroup($group);
+
+                $startDate = $startDate->modify('+1 day');
+            }*/
+
             $removedUsers = $this->handleGroup($group);
 
             array_push($removedUsersPerGroup, [

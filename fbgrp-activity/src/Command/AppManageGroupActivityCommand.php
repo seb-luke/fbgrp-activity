@@ -64,6 +64,17 @@ class AppManageGroupActivityCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         $groups = $this->getGroupsToCheck();
+        /*$startDate = new MyDateTime('2018-03-03');
+        $endDate = new MyDateTime('today');
+
+        while ($startDate < $endDate) {
+            $this->today = clone $startDate;
+            foreach ($groups as $group) {
+                $this->handleGroupActivity($group);
+            }
+            $startDate = $startDate->modify('+1 day');
+        }*/
+
         foreach ($groups as $group) {
             $this->handleGroupActivity($group);
         }
